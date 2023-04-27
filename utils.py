@@ -13,6 +13,8 @@ def get_histogram(src):
     # return histogram (256,1)
     return cv2.calcHist([src],[0],None,[256],[0,256]).astype('int32').squeeze()
 
+
+
 def get_ssim(src,tar):
     # TODO
     return ssim(src,tar)

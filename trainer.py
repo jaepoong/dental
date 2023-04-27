@@ -11,7 +11,7 @@ from torchvision import transforms
 from PIL import Image
 
 class Trainer:
-    def __init__(self,G,F,D_y,D_x,loader,target_loader,test_loader,device,args):
+    def __init__(self,G,F,D_y,D_x,loader,target_loader,device,args):
         self.G=G.to(device)
         self.F=F.to(device)
         self.D_y=D_y.to(device)
@@ -29,7 +29,6 @@ class Trainer:
         # dataloader
         self.loader=loader
         self.target_loader=target_loader
-        self.test_loader=test_loader
 
         #loss
         self.GAN_criterion=nn.MSELoss().to(device)
@@ -304,6 +303,9 @@ def generate_and_save_images(generator, test_image_loader, save_path, epoch, dev
     for test_images in test_image_loader:
         test_images = test_images.to(device)
         generated_images = generator(test_images).detach().cpu()
+        if (test_images.shape)[1]==1:
+            generated_images=torch.cat([generated_images,generated_images,generated_images],1)
+            test_images=torch.cat([test_images,test_images,test_images],1)
 
         for i in range(len(generated_images)):
             test_image=test_images[i]

@@ -5,9 +5,11 @@ from models import load_Generator,load_Discriminator
 from opt import get_opts
 from trainer import Trainer
 import torchvision.utils as tvutils
+from torchvision import transforms
+
 
 from torch.utils.data import DataLoader
-from datasets.dataloader import get_train_loader,get_test_loader
+from datasets.dataloader import get_train_loader,get_test_loader,get_eval_loader
 import numpy as np
 import os
 import wandb
@@ -29,6 +31,7 @@ def load_pretrained_generators(G, F, checkpoint_path):
     G.load_state_dict(checkpoint['G_state_dict'])
     F.load_state_dict(checkpoint['F_state_dict'])
 
+
 def main():
     torch.cuda.empty_cache()
     args=get_opts()
@@ -39,18 +42,28 @@ def main():
 
         print("Testing...")
         G,F=define_generator(args)
+        G=G.to(device)
+        F=F.to(device)
         G.eval()
         F.eval()
         
         load_pretrained_generators(G,F,args.model_path)
         
-        test_loader=get_test_loader(root=args.test_image_path)
+        test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
         image_batch=next(iter(test_loader)).to(device)
         new_images=G(image_batch).detach().cpu()
 
         tvutils.save_image(image_batch, 'test_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         tvutils.save_image(new_images, 'generated_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
-        
+        # for generate sample:
+        eval_loader=get_eval_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,gray=args.gray)
+        '''
+        for image_batch in  eval_loader:
+            image_batch=image_batch.to(device)
+            generated_images=G(image_batch).to(device)
+            for generated_image in generated_images:
+                
+           '''   
 
     else:
         print("Training...")
@@ -63,9 +76,8 @@ def main():
         G,F,D_y,D_x=define_models(args)
         
         
-        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size,resize=args.resize)
-        test_loader=get_test_loader(args.root_dir)
-        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,test_loader,device,args)
+        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size,resize=args.resize,gray=args.gray)
+        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,device,args)
         if args.model_path:
             trainer.load_checkpoint(args.model_path)
         if not os.path.isdir(args.generated_image_save_path):
@@ -82,7 +94,7 @@ def main():
                   "loss_cycle_hist" : wandb.Histogram(loss_cycle_hist),
                   "loss_identity_hist" : wandb.Histogram(loss_identity_hist)})
         # 시험용으로 해봄
-        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize)
+        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
         image_batch= next(iter(test_images))
         image_batch = image_batch.to(device)
 

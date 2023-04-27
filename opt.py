@@ -14,7 +14,7 @@ def get_opts():
                         help='root directory of the input dataset')
     parser.add_argument('--target_dir',type=str,required=True,
                         help="target root dir")
-    parser.add_argument("--lr", type=int,default=0.02)
+    parser.add_argument("--lr", type=int,default=0.0002)
     parser.add_argument("--adam_beta1",type=int,default=0.5)
     parser.add_argument("--lambda_cycle",type=int,default=10.0)
     parser.add_argument("--lambda_identity",type=int,default=0.5)
@@ -35,6 +35,7 @@ def get_opts():
     parser.add_argument("--run_name", help="Run_name")
     parser.add_argument("--resize",type=int, help= " If use resizing, use this. default is image input size")
     parser.add_argument("--n_res", type=int, default=6)
+    parser.add_argument("--gray", action='store_true')
     
     
     args=parser.parse_args()
