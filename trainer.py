@@ -39,7 +39,7 @@ class Trainer:
         self.generated_x_images = ImagePool(args,50)
         self.generated_y_images = ImagePool(args,50)
         
-        #
+        # initialization
         if args.initialization_epochs>=0:
             self.Initialization_criterion=nn.L1Loss().to(device)
             self.lambda_initialization=args.content_loss_weight
@@ -303,6 +303,7 @@ def generate_and_save_images(generator, test_image_loader, save_path, epoch, dev
     for test_images in test_image_loader:
         test_images = test_images.to(device)
         generated_images = generator(test_images).detach().cpu()
+        # Gray scale일 때 아래 실행 코드
         if (test_images.shape)[1]==1:
             generated_images=torch.cat([generated_images,generated_images,generated_images],1)
             test_images=torch.cat([test_images,test_images,test_images],1)

@@ -9,7 +9,8 @@ CUDA_VISIBLE_DEVICES=6 python main.py --root_dir ./data/processed/R --target_dir
 # Nonresizing gray 실행코드
 CUDA_VISIBLE_DEVICES=7 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 50 --save_path ./checkpoints/CycleGAN/NonResizig_Gray --generated_image_save_path generated_images/CycleGAN/NonResizig_Gray --batch_size 4 --run_name NonResizig_Gray --gray
 
-
+# 코드 문제없는지 테스트
+CUDA_VISIBLE_DEVICES=4 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 2 --save_path ./checkpoints/CycleGAN/test --generated_image_save_path generated_images/CycleGAN/test --batch_size 4 --run_name test
 
 # metric fid
 - at dental directory

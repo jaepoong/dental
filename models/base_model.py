@@ -13,7 +13,7 @@ class Resizing_Generator(nn.Module):
         self.n_res=n_res
         self.use_bias=use_bias
         self.down_sampling=nn.Sequential(
-            nn.Conv2d(1,64,kernel_size=7,stride=1,padding=0,bias=use_bias),
+            nn.Conv2d(3,64,kernel_size=7,stride=1,padding=0,bias=use_bias),
             nn.BatchNorm2d(64,affine=True),
             nn.LeakyReLU(0.2,inplace=True),
             nn.Conv2d(64,128,kernel_size=3,stride=2,padding=3,bias=use_bias),
@@ -38,7 +38,7 @@ class Resizing_Generator(nn.Module):
             nn.BatchNorm2d(128,affine=True),
             nn.LeakyReLU(0.2,inplace=True),
 
-            nn.Conv2d(128, 1, kernel_size=7, stride=1, padding=0, bias=use_bias),
+            nn.Conv2d(128, 3, kernel_size=7, stride=1, padding=0, bias=use_bias),
             nn.Tanh()
         )
     
@@ -55,7 +55,7 @@ class BaseGenerator(nn.Module):
         self.n_res=n_res
         self.use_bias=use_bias
         self.down_sampling=nn.Sequential(
-            nn.Conv2d(1,64,kernel_size=7,stride=1,padding=1,bias=use_bias), # 304,654
+            nn.Conv2d(3,64,kernel_size=7,stride=1,padding=1,bias=use_bias), # 304,654
             nn.BatchNorm2d(64,affine=True),
             nn.LeakyReLU(0.2,inplace=True),
             nn.Conv2d(64,128,kernel_size=3,stride=2,padding=1,bias=use_bias), #151,326
@@ -80,7 +80,7 @@ class BaseGenerator(nn.Module):
             nn.BatchNorm2d(128,affine=True),
             nn.LeakyReLU(0.2,inplace=True),
 
-            nn.Conv2d(128, 1, kernel_size=5, stride=1, padding=0, bias=use_bias),
+            nn.Conv2d(128, 3, kernel_size=5, stride=1, padding=0, bias=use_bias),
             nn.Tanh()
         )
     
@@ -130,7 +130,7 @@ class BaseDiscriminator(nn.Module):
         super().__init__()
 
         self.layers = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=0, bias=use_bias),
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=0, bias=use_bias),
             nn.ReLU(inplace=True),
 
             nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=0, bias=use_bias),
