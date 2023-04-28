@@ -29,8 +29,6 @@ class DefaultDataset(data.Dataset):
         img = Image.open(fname).convert('RGB')
         if self.transform is not None:
             img = self.transform(img)
-        img=transforms.Grayscale(num_output_channels=1)(img)
-        
         return img
     def __len__(self):
         return len(self.samples)

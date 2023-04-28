@@ -46,7 +46,7 @@ def main():
         F=F.to(device)
         G.eval()
         F.eval()
-        
+
         load_pretrained_generators(G,F,args.model_path)
         
         test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
