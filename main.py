@@ -22,8 +22,8 @@ def define_models(args):
     return G,F,D_y,D_x
 
 def define_generator(args):
-    G=load_Generator(args.model)
-    F=load_Generator(args.model)
+    G=load_Generator(args)
+    F=load_Generator(args)
     return G,F
 
 def load_pretrained_generators(G, F, checkpoint_path):
@@ -87,12 +87,19 @@ def main():
         loss_D_x_hist, loss_D_y_hist, loss_G_GAN_hist, loss_F_GAN_hist, \
         loss_cycle_hist, loss_identity_hist=trainer.train(num_epochs=args.num_epochs,initialization_epochs=args.initialization_epochs,save_path=args.save_path)
         
-        wandb.log({"loss_D_x_hist": wandb.Histogram(loss_D_x_hist),
+        wandb.log({"loss_D_x_hist": loss_D_x_hist,
+                  "loss_D_y_hist" : loss_D_y_hist,
+                  "loss_G_GAN_hist" : loss_G_GAN_hist,
+                  "loss_F_GAN_hist" : loss_F_GAN_hist,
+                  "loss_cycle_hist" : loss_cycle_hist,
+                  "loss_identity_hist" : loss_identity_hist}) 
+        
+"""        wandb.log({"loss_D_x_hist": wandb.Histogram(loss_D_x_hist),
                   "loss_D_y_hist" : wandb.Histogram(loss_D_y_hist),
                   "loss_G_GAN_hist" : wandb.Histogram(loss_G_GAN_hist),
                   "loss_F_GAN_hist" : wandb.Histogram(loss_F_GAN_hist),
                   "loss_cycle_hist" : wandb.Histogram(loss_cycle_hist),
-                  "loss_identity_hist" : wandb.Histogram(loss_identity_hist)})
+                  "loss_identity_hist" : wandb.Histogram(loss_identity_hist)})"""
         # 시험용으로 해봄
         test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
         image_batch= next(iter(test_images))

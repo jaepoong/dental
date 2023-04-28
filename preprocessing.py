@@ -10,6 +10,7 @@ def config_parser():
     parser.add_argument('--cut_off',default=True,action='store_false')
     parser.add_argument('--cut_off_size',default="R")
     parser.add_argument('--save_dir',type=str, default="./data/processed" )
+
     args=parser.parse_args()
     return args
 
@@ -22,6 +23,7 @@ if __name__=="__main__":
     img_list=glob.glob(os.path.join(args.dataroot,"*.jpg"))
     if not os.path.isdir(args.save_dir):
         os.mkdir(args.save_dir)
+    
     
     for path in img_list:
 

@@ -132,7 +132,7 @@ class Trainer:
             if self.image_test and self.curr_epoch%5==0:
                 generate_and_save_images(self.G,self.loader,self.generated_image_save_path,self.curr_epoch,self.device)
             self.curr_epoch += 1
-            if self.curr_epoch%30==0:
+            if self.curr_epoch%10==0:
                 self.save_checkpoint(os.path.join(save_path, 'checkpoint-epoch-{0}.ckpt'.format(self.curr_epoch)))
             print("Training Phase [{0}/{1}], {2:.4f} seconds".format(self.curr_epoch, num_epochs, time.time() - start))
 
