@@ -13,7 +13,8 @@ def get_histogram(src):
     # return histogram (256,1)
     return cv2.calcHist([src],[0],None,[256],[0,256]).astype('int32').squeeze()
 
-
+def cos_sim(a,b):
+    return np.dot(a,b)/(np.linalg.norm(a)*np.linalg.norm(b))
 
 def get_ssim(src,tar):
     # TODO
@@ -23,8 +24,6 @@ def get_lpips():
     # TODO
     return 
 
-def cosin_metric(x1, x2):
-  return np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2))
 
 def histogram_matching(src,ref):
     matched=exposure.match_histograms(src,ref)
