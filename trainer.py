@@ -103,14 +103,13 @@ class Trainer:
             epoch_loss_F_GAN = 0
             epoch_loss_cycle = 0
             epoch_loss_identity = 0
-            epoch_target_D=0
-            epoch_generated_D=0
+
             devide=0
             for ix,(img,target_img) in enumerate(zip(self.loader,self.target_loader)):
                 img=img.to(self.device)
                 target_img=target_img.to(self.device)
                 # train_step
-                loss_D_x, loss_D_y, loss_G_GAN, loss_F_GAN, loss_cycle, loss_identity,target_D,generated_D = self.train_step(img,target_img)
+                loss_D_x, loss_D_y, loss_G_GAN, loss_F_GAN, loss_cycle, loss_identity,target_Dy,generated_Dy,target_Dx,generated_Dx = self.train_step(img,target_img)
                 
                 # hist
                 self.loss_D_x_hist.append(loss_D_x)
@@ -126,23 +125,31 @@ class Trainer:
                 epoch_loss_F_GAN += loss_F_GAN
                 epoch_loss_cycle += loss_cycle
                 epoch_loss_identity += loss_identity
-                epoch_target_D+=target_D
-                epoch_generated_D+=generated_D
+                step_target_Dy=target_Dy
+                step_generated_Dy=generated_Dy
+                step_target_Dx=target_Dx
+                step_generated_Dx=generated_Dx
                 devide+=1
                 # print progress
                 if (ix + 1) % self.print_every == 0:
                     print("Training Phase Epoch {0} Iteration {1}: loss_D_x: {2:.4f} loss_D_y: {3:.4f} loss_G: {4:.4f} loss_F: {5:.4f} "
                           "loss_cycle: {6:.4f} loss_identity: {7:.4f}".format(epoch + 1, ix+1, epoch_loss_D_x / (ix + 1), epoch_loss_D_y / (ix + 1),
                                                                               epoch_loss_G_GAN / (ix + 1), epoch_loss_F_GAN / (ix + 1),
-                                                                              epoch_loss_cycle / (ix + 1), epoch_loss_identity / (ix + 1)))  # print progress      
+                                                                              epoch_loss_cycle / (ix + 1), epoch_loss_identity / (ix + 1)))  # print progress    
+                wandb.log({
+                            "step_target_Dy" : step_target_Dy,
+                            "step_generated_Dy" : step_generated_Dy,
+                            "step_target_Dx" : step_target_Dx,
+                            "step_generated_Dx" : step_generated_Dx
+                    
+                })
+                  
             wandb.log({"loss_D_x_hist": epoch_loss_D_x/devide,
                   "loss_D_y_hist" : epoch_loss_D_y/devide,
                   "loss_G_GAN_hist" : epoch_loss_G_GAN/devide,
                   "loss_F_GAN_hist" : epoch_loss_F_GAN/devide,
                   "loss_cycle_hist" : epoch_loss_cycle/devide,
                   "loss_identity_hist" : epoch_loss_identity/devide,
-                  "epoch_target_D" : epoch_target_D/devide,
-                  "epoch_generated_D" : epoch_generated_D/devide
                   }) 
             if self.image_test and self.curr_epoch%5==0:
                 generate_and_save_images(self.G,self.loader,self.generated_image_save_path,self.curr_epoch,self.device)
@@ -234,7 +241,7 @@ class Trainer:
         self.F_optimizer.step()
 
         return loss_D_x.detach().item(), loss_D_y.detach().item(), loss_G_GAN.detach().item(), loss_F_GAN.detach().item(), \
-               loss_cycle.detach().item(), loss_identity.detach().item(),torch.mean(target_output).detach().item,torch.mean(generated_output).detach().item()
+               loss_cycle.detach().item(), loss_identity.detach().item(),torch.mean(target_output).detach().item(),torch.mean(generated_y_output).detach().item(),torch.mean(photo_output).detach().item(),torch.mean(generated_x_output).detach().item()
                 
     def save_checkpoint(self, checkpoint_path):
         torch.save(
