@@ -258,5 +258,5 @@ class BaseDiscriminator(nn.Module):
     def forward(self, input):
         output = self.layers(input)
         # adding average pooling
-        output=F_torch.avg_pool2d(output,output.size()[2:])
+        #output=F_torch.avg_pool2d(output,output.size()[2:])
         return output
