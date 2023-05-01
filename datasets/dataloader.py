@@ -35,8 +35,8 @@ class DefaultDataset(data.Dataset):
     def __len__(self):
         return len(self.samples)
 
-def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,size=[310,650],resize=False):
-    
+def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,size=[512,512]):
+    '''
     if resize:
         transform=transforms.Compose([
             transforms.RandomCrop(size),
@@ -44,9 +44,8 @@ def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,siz
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],
                                  std=[0.5,0.5,0.5])
-            ])
-    else:
-        transform=transforms.Compose([
+            ]) '''
+    transform=transforms.Compose([
             transforms.RandomCrop(size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],
@@ -69,18 +68,9 @@ def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,siz
     
     return loader,target_loader
 
-def get_test_loader(root,batch_size=8,size=[310,650],shuffle=False,resize=False):
-    if resize:
-        transform=transforms.Compose([
-            transforms.RandomCrop(size),
-            transforms.Resize([resize,resize]),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5,0.5,0.5],
-                                 std=[0.5,0.5,0.5])
-            ])
-    
-    else:
-        transform=transforms.Compose([
+def get_test_loader(root,batch_size=8,size=[512,512],shuffle=False):
+
+    transform=transforms.Compose([
             transforms.RandomCrop(size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],

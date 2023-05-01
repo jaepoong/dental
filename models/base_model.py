@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from models.block import *
+from torch.nn import functional as F_torch
 
 ## TODO 이 generator랑 discriminator 정리해서 모듈 수좀 줄이자... 너무 중구난방하게 실험했다....
 class BaseGenerator(nn.Module):
@@ -238,7 +239,7 @@ class BaseDiscriminator(nn.Module):
             nn.ReLU(inplace=True),
             nn.InstanceNorm2d(128),
 
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=0, bias=use_bias),
+            nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=0, bias=use_bias),
             nn.InstanceNorm2d(128),
             nn.ReLU(inplace=True),
 
@@ -246,10 +247,16 @@ class BaseDiscriminator(nn.Module):
             nn.InstanceNorm2d(256),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(256, 1, kernel_size=3, stride=1, padding=0, bias=use_bias)
+            nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=0, bias=use_bias),
+            nn.InstanceNorm2d(512),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(512, 1, kernel_size=3, stride=1, padding=0, bias=use_bias)
 
         )
 
     def forward(self, input):
         output = self.layers(input)
+        # adding average pooling
+        output=F_torch.avg_pool2d(output,output.size()[2:])
         return output

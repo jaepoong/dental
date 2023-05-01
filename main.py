@@ -74,9 +74,10 @@ def main():
             wandb.run.save()
         print("model_loading...")
         G,F,D_y,D_x=define_models(args)
+        wandb.watch([G,F,D_y,D_x],log='all')
         
         
-        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size,resize=args.resize,gray=args.gray)
+        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size)
         trainer=Trainer(G,F,D_y,D_x,loader,target_loader,device,args)
         if args.model_path:
             trainer.load_checkpoint(args.model_path)
@@ -86,22 +87,15 @@ def main():
         print('Start Training...')
         loss_D_x_hist, loss_D_y_hist, loss_G_GAN_hist, loss_F_GAN_hist, \
         loss_cycle_hist, loss_identity_hist=trainer.train(num_epochs=args.num_epochs,initialization_epochs=args.initialization_epochs,save_path=args.save_path)
-        
+        '''
         wandb.log({"loss_D_x_hist": loss_D_x_hist,
                   "loss_D_y_hist" : loss_D_y_hist,
                   "loss_G_GAN_hist" : loss_G_GAN_hist,
                   "loss_F_GAN_hist" : loss_F_GAN_hist,
                   "loss_cycle_hist" : loss_cycle_hist,
-                  "loss_identity_hist" : loss_identity_hist}) 
-        
-"""        wandb.log({"loss_D_x_hist": wandb.Histogram(loss_D_x_hist),
-                  "loss_D_y_hist" : wandb.Histogram(loss_D_y_hist),
-                  "loss_G_GAN_hist" : wandb.Histogram(loss_G_GAN_hist),
-                  "loss_F_GAN_hist" : wandb.Histogram(loss_F_GAN_hist),
-                  "loss_cycle_hist" : wandb.Histogram(loss_cycle_hist),
-                  "loss_identity_hist" : wandb.Histogram(loss_identity_hist)})"""
+                  "loss_identity_hist" : loss_identity_hist}) '''
         # 시험용으로 해봄
-        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
+        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         image_batch= next(iter(test_images))
         image_batch = image_batch.to(device)
 
@@ -109,7 +103,7 @@ def main():
 
         tvutils.save_image(image_batch, 'test_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         tvutils.save_image(new_images, 'generated_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))   
-        
+        wandb.finish()
     # define_model
 
 if __name__=="__main__":

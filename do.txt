@@ -7,9 +7,13 @@ CUDA_VISIBLE_DEVICES=4 python main.py --root_dir ./data/processed/R --target_dir
 # gray 실행 코드
 CUDA_VISIBLE_DEVICES=6 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 50 --save_path ./checkpoints/CycleGAN/Gray --generated_image_save_path generated_images/CycleGAN/Gray --batch_size 8 --run_name Gray --gray
 # Nonresizing gray 실행코드
-CUDA_VISIBLE_DEVICES=7 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 50 --save_path ./checkpoints/CycleGAN/NonResizig_Gray --generated_image_save_path generated_images/CycleGAN/NonResizig_Gray --batch_size 4 --run_name NonResizig_Gray --gray
+CUDA_VISIBLE_DEVICES=7 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 50 --save_path ./checkpoints/CycleGAN/NonResizig_Gray --generated_image_save_path generated_images/CycleGAN/NonResizig_Gray --batch_size 4 --run_name NonResizig_Gray 
+# 512 first
+CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 30 --save_path ./checkpoints/CycleGAN/Base --generated_image_save_path generated_images/CycleGAN/Base --batch_size 3 --run_name Base
 
 
+# test code
+CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 4 --save_path ./checkpoints/CycleGAN/NonResizig_Gray --generated_image_save_path generated_images/CycleGAN/NonResizig_Gray --batch_size 4 --run_name NonResizig_Gray --initialization_epochs 2
 
 # metric fid
 - at dental directory
