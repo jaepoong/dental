@@ -92,6 +92,7 @@ def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=Fal
         transforms.Normalize(mean=[0.5,0.5,0.5],
                              std=[0.5,0.5,0.5])
         ])
+
     dataset=DefaultDataset(root,transform)
     return data.DataLoader(dataset=dataset,
                            batch_size=batch_size,
@@ -99,3 +100,35 @@ def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=Fal
                            num_workers=num_workers,
                            pin_memory=True,
                            drop_last=drop_last)
+
+
+class EvalDataset(data.Dataset):
+    def __init__(self, root,transform=None):
+        self.samples=listdir(root)
+        self.transform = transform
+        self.targets = None
+
+    def __getitem__(self, index):
+        fname = self.samples[index]
+        img = Image.open(fname).convert('RGB')
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img
+    def __len__(self):
+        return len(self.samples)
+
+def get_metric_loader(root,img_size=256,batch_size=8,shuffle=False):
+
+    transform = transforms.Compose([
+        transforms.Resize([img_size, img_size]),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5,0.5,0.5],
+                             std=[0.5,0.5,0.5])
+    ])
+    dataset=EvalDataset(root,transform)
+    loader=data.DataLoader(dataset=dataset,
+                           batch_size=batch_size,
+                           shuffle=shuffle
+                           )
+    return loader

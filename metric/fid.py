@@ -7,7 +7,7 @@ import numpy as np
 from torchvision import models
 from scipy import linalg
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from datasets.dataloader import get_eval_loader
+from datasets.dataloader import get_metric_loader
 try:
     from tqdm import tqdm
 except ImportError:
@@ -54,7 +54,8 @@ def calculate_fid_given_paths(paths, img_size=256, batch_size=50):
     print('Calculating FID given paths %s and %s...' % (paths[0], paths[1]))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     inception = InceptionV3().eval().to(device)
-    loaders = [get_eval_loader(path, img_size, batch_size) for path in paths]
+    loaders = [get_metric_loader(path, img_size, batch_size) for path in paths]
+    print(device)
 
     mu, cov = [], []
     for loader in loaders:
