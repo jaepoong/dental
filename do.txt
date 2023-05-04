@@ -3,7 +3,14 @@ CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/R --target_dir
 
 
 # test code
-CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/R --target_dir ./data/processed/V --lambda_cycle 10 --num_epochs 4 --save_path ./checkpoints/CycleGAN/NonResizig_Gray --generated_image_save_path generated_images/CycleGAN/NonResizig_Gray --batch_size 4 --run_name NonResizig_Gray --initialization_epochs 2
+CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/V --target_dir ./data/processed/R --lambda_cycle 10 --num_epochs 106 --save_path ./checkpoints/CycleGAN/test --generated_image_save_path generated_images/CycleGAN/test --batch_size 3 --run_name test --initialization_epochs 0
+
+# BaseCode
+CUDA_VISIBLE_DEVICES=3 python main.py --root_dir ./data/processed/V --target_dir ./data/processed/R --lambda_cycle 10 --num_epochs 101 --save_path ./checkpoints/CycleGAN/Base --generated_image_save_path generated_images/CycleGAN/Base --batch_size 3 --run_name Base --n_res 4
+# U_NetCode
+CUDA_VISIBLE_DEVICES=2 python main.py --root_dir ./data/processed/V --target_dir ./data/processed/R --lambda_cycle 10 --num_epochs 101 --save_path ./checkpoints/CycleGAN/U_Net --generated_image_save_path generated_images/CycleGAN/U_Net --batch_size 2 --run_name U_Net --model U_Net
+# Att_UNet
+CUDA_VISIBLE_DEVICES=1 python main.py --root_dir ./data/processed/V --target_dir ./data/processed/R --lambda_cycle 10 --num_epochs 101 --save_path ./checkpoints/CycleGAN/AttU_Net --generated_image_save_path generated_images/CycleGAN/AttU_Net --batch_size 2 --run_name AttU_Net --model AttU_Net
 
 # metric fid
 - at dental directory

@@ -6,13 +6,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
-from utils import he_init
+from utils import *
 from torchvision import transforms
 from PIL import Image
 import wandb
 
 class Trainer:
-    def __init__(self,G,F,D_y,D_x,loader,target_loader,device,args):
+    def __init__(self,G,F,D_y,D_x,loader,target_loader,eval_loader,device,args):
         self.G=G.to(device)
         self.F=F.to(device)
         self.D_y=D_y.to(device)
@@ -30,6 +30,7 @@ class Trainer:
         # dataloader
         self.loader=loader
         self.target_loader=target_loader
+        self.eval_loader=eval_loader
 
         #loss
         self.GAN_criterion=nn.MSELoss().to(device)
@@ -83,7 +84,8 @@ class Trainer:
             if self.image_test and self.curr_epoch%5==0:
                 generate_and_save_images(self.G,self.loader,self.args.generated_image_save_path,self.curr_epoch,self.device)
             self.curr_epoch+=1
-            wandb.log({"loss_D_x_hist": loss/devide}) 
+            wandb.log({"loss_D_x_hist": loss/devide,
+                      "epoch": self.curr_epoch}) 
 
             print("Initialization Phase [{0}/{1}], {2:.4f} seconds".format(init_epoch + 1, initialization_epochs,
                                                                            time.time() - start))
@@ -95,6 +97,8 @@ class Trainer:
             
         ## training start
         print("training real epoch start...")
+        best_fid=1000
+        best_epoch=0
         for epoch in tqdm(range(self.curr_epoch, num_epochs),desc="epochs",mininterval=0.01):
             start=time.time()
             epoch_loss_D_x = 0
@@ -105,6 +109,7 @@ class Trainer:
             epoch_loss_identity = 0
 
             devide=0
+
             for ix,(img,target_img) in enumerate(zip(self.loader,self.target_loader)):
                 img=img.to(self.device)
                 target_img=target_img.to(self.device)
@@ -143,21 +148,30 @@ class Trainer:
                             "step_generated_Dx" : step_generated_Dx
                     
                 })
-                  
+            # calculate fid at every 10 epoch
+            fid=calculate_fid(self.G, self.eval_loader,os.path.join(self.generated_image_save_path,"test"),"./data/for_eval_noncrop",device=self.device)
+            if fid<=best_fid:
+                self.save_checkpoint(os.path.join(save_path, 'best.ckpt'))
+                best_fid=fid
+                best_epoch=self.curr_epoch
             wandb.log({"loss_D_x_hist": epoch_loss_D_x/devide,
                   "loss_D_y_hist" : epoch_loss_D_y/devide,
                   "loss_G_GAN_hist" : epoch_loss_G_GAN/devide,
                   "loss_F_GAN_hist" : epoch_loss_F_GAN/devide,
                   "loss_cycle_hist" : epoch_loss_cycle/devide,
                   "loss_identity_hist" : epoch_loss_identity/devide,
+                  "FID" : fid,
+                  "epoch" : self.curr_epoch
                   }) 
             if self.image_test and self.curr_epoch%5==0:
                 generate_and_save_images(self.G,self.loader,self.generated_image_save_path,self.curr_epoch,self.device)
-            self.curr_epoch += 1
-            if self.curr_epoch%10==0:
+            if self.curr_epoch%20==0:
                 self.save_checkpoint(os.path.join(save_path, 'checkpoint-epoch-{0}.ckpt'.format(self.curr_epoch)))
-            print("Training Phase [{0}/{1}], {2:.4f} seconds".format(self.curr_epoch, num_epochs, time.time() - start))
 
+            self.curr_epoch += 1
+            print("Training Phase [{0}/{1}], {2:.4f} seconds".format(self.curr_epoch, num_epochs, time.time() - start))
+        wandb.run.summary["best_fid"]=best_fid
+        wandb.run.summary["best_epoch"]=best_epoch
         self.save_checkpoint(os.path.join(save_path, 'checkpoint-epoch-{0}.ckpt'.format(num_epochs)))
 
         return self.loss_D_x_hist, self.loss_D_y_hist, self.loss_G_GAN_hist, self.loss_F_GAN_hist, \
@@ -324,7 +338,7 @@ def generate_and_save_images(generator, test_image_loader, save_path, epoch, dev
     image_ix = 0
     for test_images in test_image_loader:
         test_images = test_images.to(device)
-        generated_images = generator(test_images).detach().cpu()
+        generated_images = torch.clamp(generator(test_images).detach().cpu(), 0, 1)
         if (test_images.shape)[1]==1:
             generated_images=torch.cat([generated_images,generated_images,generated_images],1)
             test_images=torch.cat([test_images,test_images,test_images],1)

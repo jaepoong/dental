@@ -84,10 +84,17 @@ def get_test_loader(root,batch_size=8,size=[512,512],shuffle=False):
     return loader
     
 
-def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=False):
+def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=False,resizing=False):
     # evaluate dataloader 생성
     print('Preparing DataLoader for the evaluation phase...')
     transform=transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5,0.5,0.5],
+                             std=[0.5,0.5,0.5])
+        ])
+    if resizing:
+        transform=transforms.Compose([
+        transforms.Resize(resizing),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5,0.5,0.5],
                              std=[0.5,0.5,0.5])
@@ -118,7 +125,7 @@ class EvalDataset(data.Dataset):
     def __len__(self):
         return len(self.samples)
 
-def get_metric_loader(root,img_size=256,batch_size=8,shuffle=False):
+def get_metric_loader(root,img_size=256,batch_size=8,num_workers=4,shuffle=False):
 
     transform = transforms.Compose([
         transforms.Resize([img_size, img_size]),
@@ -129,6 +136,7 @@ def get_metric_loader(root,img_size=256,batch_size=8,shuffle=False):
     dataset=EvalDataset(root,transform)
     loader=data.DataLoader(dataset=dataset,
                            batch_size=batch_size,
-                           shuffle=shuffle
+                           shuffle=shuffle,
+                           num_workers=4
                            )
     return loader

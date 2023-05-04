@@ -13,7 +13,8 @@ from models.base_model import BaseGenerator
 import torch
 from datasets.dataloader import *
 import torchvision.transforms as transforms
-
+from metric.fid import *
+import shutil
 
 
 def generate_test_sample(model,dataloader,save_path,device=torch.device('cpu')):
@@ -26,13 +27,20 @@ def generate_test_sample(model,dataloader,save_path,device=torch.device('cpu')):
     k=0
     for batch in dataloader:
         for im in batch:
-            for i in range(4):
-                croped=transforms.RandomCrop(512)(im)
-                sample=model(croped.unsqueeze(0).to(device))
-                sample=torch.cat([sample,sample,sample],1)
-                sample=torch_to_image(sample[0])
-                sample.save(os.path.join(save_path,(str(k)+'.jpg')))
-                k+=1
+            croped=transforms.CenterCrop(512)(im)
+            sample=model(croped.unsqueeze(0).to(device))
+            sample=torch.cat([sample,sample,sample],1)
+            sample=torch_to_image(sample[0])
+            sample.save(os.path.join(save_path,(str(k)+'.jpg')))
+            k+=1
+
+def calculate_fid(model,data_loader,save_path,base_path ,img_size=256,batch_size=50,device=torch.device('cpu')):
+    # after generate sample and calculate fid
+    
+    generate_test_sample(model,data_loader,save_path,device=device)
+    fid=calculate_fid_given_paths([base_path,save_path],img_size,batch_size)
+    shutil.rmtree(save_path)
+    return fid
 
 def autocrop(pil_img, pct_focus=0.3, matrix_HW_pct=0.3, sample=1):
     """

@@ -49,14 +49,14 @@ def main():
         
         load_pretrained_generators(G,F,args.model_path)
         
-        test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
+        test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         image_batch=next(iter(test_loader)).to(device)
         new_images=G(image_batch).detach().cpu()
 
         tvutils.save_image(image_batch, 'test_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         tvutils.save_image(new_images, 'generated_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         # for generate sample:
-        eval_loader=get_eval_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,gray=args.gray)
+        eval_loader=get_eval_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         '''
         for image_batch in  eval_loader:
             image_batch=image_batch.to(device)
@@ -74,15 +74,18 @@ def main():
             wandb.run.save()
         print("model_loading...")
         G,F,D_y,D_x=define_models(args)
-        wandb.watch([G,F,D_y,D_x],log='all')
+        #wandb.watch([G,F,D_y,D_x],log='all')
         
         
         loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size)
-        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,device,args)
+        eval_loader=get_eval_loader(root=args.root_dir, batch_size=4, shuffle=False)
+
+        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,eval_loader,device,args)
         if args.model_path:
             trainer.load_checkpoint(args.model_path)
         if not os.path.isdir(args.generated_image_save_path):
             os.makedirs(args.generated_image_save_path)
+        
 
         print('Start Training...')
         loss_D_x_hist, loss_D_y_hist, loss_G_GAN_hist, loss_F_GAN_hist, \

@@ -30,11 +30,10 @@ def get_opts():
     parser.add_argument("--test_image_path",default="generated_images/test")
     parser.add_argument("--model_path",type=str)
     parser.add_argument("--test",action="store_true")
-    parser.add_argument("--model",default="base")
+    parser.add_argument("--model",type=str,default="base")
     parser.add_argument("--project_name", default="Dental_CycleGan",help="wandb Project name" )
     parser.add_argument("--run_name", help="Run_name")
-    parser.add_argument("--resize",type=int, help= " If use resizing, use this. default is image input size")
-    parser.add_argument("--n_res", type=int, default=6)
+    parser.add_argument("--n_res", type=int, default=3)
     
     
     args=parser.parse_args()

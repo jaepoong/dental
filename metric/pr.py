@@ -387,7 +387,7 @@ if __name__ == '__main__':
 
     print('precision:', precision)
     print('recall:', recall)
-
+'''
     # Example usage: realism of a real image
     if args.path_real.endswith('.npz'):
         print('skip realism score for real image because [path_real] is .npz file')
@@ -416,4 +416,4 @@ if __name__ == '__main__':
     # for batch in tqdm(dataloader, desc=desc):
     #     images.append(batch)
     # images = torch.cat(images, dim=0)
-    # print(ipr.precision_and_recall(images))
+    # print(ipr.precision_and_recall(images))'''
