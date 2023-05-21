@@ -10,6 +10,8 @@ def config_parser():
     parser.add_argument('--cut_off',default=True,action='store_false')
     parser.add_argument('--cut_off_size',default="R")
     parser.add_argument('--save_dir',type=str, default="./data/processed" )
+    parser.add_argument('--resizing',default=[2048,1024])
+
     args=parser.parse_args()
     return args
 
@@ -23,6 +25,7 @@ if __name__=="__main__":
     if not os.path.isdir(args.save_dir):
         os.mkdir(args.save_dir)
     
+    
     for path in img_list:
 
         im=cv2.imread(path)
@@ -33,9 +36,9 @@ if __name__=="__main__":
                 im=im[95:1335,170:2770]
             else:
                 im=im[100:1340,200:2800]
-
-        cv2.imwrite(os.path.join(args.save_dir,path[-12:]),im)
-
         
-            
+        if args.resizing:
+            im=cv2.resize(im,args.resizing)
+        cv2.imwrite(os.path.join(args.save_dir,path[-12:]),im)
+    print("image_shape={}".format(im.shape))
         

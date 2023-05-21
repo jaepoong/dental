@@ -22,8 +22,8 @@ def define_models(args):
     return G,F,D_y,D_x
 
 def define_generator(args):
-    G=load_Generator(args.model)
-    F=load_Generator(args.model)
+    G=load_Generator(args)
+    F=load_Generator(args)
     return G,F
 
 def load_pretrained_generators(G, F, checkpoint_path):
@@ -49,14 +49,14 @@ def main():
         
         load_pretrained_generators(G,F,args.model_path)
         
-        test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
+        test_loader = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         image_batch=next(iter(test_loader)).to(device)
         new_images=G(image_batch).detach().cpu()
 
         tvutils.save_image(image_batch, 'test_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         tvutils.save_image(new_images, 'generated_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         # for generate sample:
-        eval_loader=get_eval_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,gray=args.gray)
+        eval_loader=get_eval_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         '''
         for image_batch in  eval_loader:
             image_batch=image_batch.to(device)
@@ -74,27 +74,31 @@ def main():
             wandb.run.save()
         print("model_loading...")
         G,F,D_y,D_x=define_models(args)
+        #wandb.watch([G,F,D_y,D_x],log='all')
         
         
-        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size,resize=args.resize,gray=args.gray)
-        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,device,args)
+        loader,target_loader=get_train_loader(args.root_dir,args.target_dir,batchsize=args.batch_size)
+        eval_loader=get_eval_loader(root=args.root_dir, batch_size=4, shuffle=False)
+
+        trainer=Trainer(G,F,D_y,D_x,loader,target_loader,eval_loader,device,args)
         if args.model_path:
             trainer.load_checkpoint(args.model_path)
         if not os.path.isdir(args.generated_image_save_path):
             os.makedirs(args.generated_image_save_path)
+        
 
         print('Start Training...')
         loss_D_x_hist, loss_D_y_hist, loss_G_GAN_hist, loss_F_GAN_hist, \
         loss_cycle_hist, loss_identity_hist=trainer.train(num_epochs=args.num_epochs,initialization_epochs=args.initialization_epochs,save_path=args.save_path)
-        
-        wandb.log({"loss_D_x_hist": wandb.Histogram(loss_D_x_hist),
-                  "loss_D_y_hist" : wandb.Histogram(loss_D_y_hist),
-                  "loss_G_GAN_hist" : wandb.Histogram(loss_G_GAN_hist),
-                  "loss_F_GAN_hist" : wandb.Histogram(loss_F_GAN_hist),
-                  "loss_cycle_hist" : wandb.Histogram(loss_cycle_hist),
-                  "loss_identity_hist" : wandb.Histogram(loss_identity_hist)})
+        '''
+        wandb.log({"loss_D_x_hist": loss_D_x_hist,
+                  "loss_D_y_hist" : loss_D_y_hist,
+                  "loss_G_GAN_hist" : loss_G_GAN_hist,
+                  "loss_F_GAN_hist" : loss_F_GAN_hist,
+                  "loss_cycle_hist" : loss_cycle_hist,
+                  "loss_identity_hist" : loss_identity_hist}) '''
         # 시험용으로 해봄
-        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False,resize=args.resize,gray=args.gray)
+        test_images = get_test_loader(root=args.root_dir, batch_size=args.batch_size, shuffle=False)
         image_batch= next(iter(test_images))
         image_batch = image_batch.to(device)
 
@@ -102,7 +106,7 @@ def main():
 
         tvutils.save_image(image_batch, 'test_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))
         tvutils.save_image(new_images, 'generated_images.jpg', nrow=3, padding=2, normalize=True, value_range=(-1, 1))   
-        
+        wandb.finish()
     # define_model
 
 if __name__=="__main__":

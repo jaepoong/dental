@@ -19,26 +19,24 @@ def listdir(dname):
     return fnames
 
 class DefaultDataset(data.Dataset):
-    def __init__(self, root,gray, transform=None):
+    def __init__(self, root,transform=None):
         self.samples=listdir(root)
         self.transform = transform
         self.targets = None
-        self.gray=gray
 
     def __getitem__(self, index):
         fname = self.samples[index]
         img = Image.open(fname).convert('RGB')
         if self.transform is not None:
             img = self.transform(img)
-        if self.gray:
-            img=transforms.Grayscale(num_output_channels=1)(img)
+        img=transforms.Grayscale(num_output_channels=1)(img)
         
         return img
     def __len__(self):
         return len(self.samples)
 
-def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,size=[310,650],resize=False,gray=False):
-    
+def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,size=[512,512]):
+    '''
     if resize:
         transform=transforms.Compose([
             transforms.RandomCrop(size),
@@ -46,17 +44,16 @@ def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,siz
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],
                                  std=[0.5,0.5,0.5])
-            ])
-    else:
-        transform=transforms.Compose([
+            ]) '''
+    transform=transforms.Compose([
             transforms.RandomCrop(size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],
                                  std=[0.5,0.5,0.5])
             ])
     
-    dataset=DefaultDataset(root,gray,transform)
-    target_dataset=DefaultDataset(target_root,gray,transform)
+    dataset=DefaultDataset(root,transform)
+    target_dataset=DefaultDataset(target_root,transform)
 
     loader=data.DataLoader(dataset=dataset,
                            batch_size=batchsize,
@@ -71,24 +68,15 @@ def get_train_loader(root,target_root,batchsize=8,num_workers=4,shuffle=True,siz
     
     return loader,target_loader
 
-def get_test_loader(root,batch_size=8,size=[310,650],shuffle=False,resize=False,gray=False):
-    if resize:
-        transform=transforms.Compose([
-            transforms.RandomCrop(size),
-            transforms.Resize([resize,resize]),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5,0.5,0.5],
-                                 std=[0.5,0.5,0.5])
-            ])
-    
-    else:
-        transform=transforms.Compose([
+def get_test_loader(root,batch_size=8,size=[512,512],shuffle=False):
+
+    transform=transforms.Compose([
             transforms.RandomCrop(size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5,0.5,0.5],
                                  std=[0.5,0.5,0.5])
             ])
-    dataset=DefaultDataset(root,gray,transform)
+    dataset=DefaultDataset(root,transform)
     loader=data.DataLoader(dataset=dataset,
                            batch_size=batch_size,
                            shuffle=shuffle
@@ -96,7 +84,7 @@ def get_test_loader(root,batch_size=8,size=[310,650],shuffle=False,resize=False,
     return loader
     
 
-def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=False,gray=False):
+def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=False,resizing=False):
     # evaluate dataloader 생성
     print('Preparing DataLoader for the evaluation phase...')
     transform=transforms.Compose([
@@ -104,10 +92,51 @@ def get_eval_loader(root ,shuffle=False,batch_size=4,num_workers=4,drop_last=Fal
         transforms.Normalize(mean=[0.5,0.5,0.5],
                              std=[0.5,0.5,0.5])
         ])
-    dataset=DefaultDataset(root,gray,transform)
+    if resizing:
+        transform=transforms.Compose([
+        transforms.Resize(resizing),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5,0.5,0.5],
+                             std=[0.5,0.5,0.5])
+        ])
+
+    dataset=DefaultDataset(root,transform)
     return data.DataLoader(dataset=dataset,
                            batch_size=batch_size,
                            shuffle=shuffle,
                            num_workers=num_workers,
                            pin_memory=True,
-                           drop_last=drop_last)  
+                           drop_last=drop_last)
+
+
+class EvalDataset(data.Dataset):
+    def __init__(self, root,transform=None):
+        self.samples=listdir(root)
+        self.transform = transform
+        self.targets = None
+
+    def __getitem__(self, index):
+        fname = self.samples[index]
+        img = Image.open(fname).convert('RGB')
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img
+    def __len__(self):
+        return len(self.samples)
+
+def get_metric_loader(root,img_size=256,batch_size=8,num_workers=4,shuffle=False):
+
+    transform = transforms.Compose([
+        transforms.Resize([img_size, img_size]),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5,0.5,0.5],
+                             std=[0.5,0.5,0.5])
+    ])
+    dataset=EvalDataset(root,transform)
+    loader=data.DataLoader(dataset=dataset,
+                           batch_size=batch_size,
+                           shuffle=shuffle,
+                           num_workers=4
+                           )
+    return loader
