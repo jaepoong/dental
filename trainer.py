@@ -338,7 +338,7 @@ def generate_and_save_images(generator, test_image_loader, save_path, epoch, dev
     image_ix = 0
     for test_images in test_image_loader:
         test_images = test_images.to(device)
-        generated_images = torch.clamp(generator(test_images).detach().cpu(), 0, 1)
+        generated_images = generator(test_images).detach().cpu()
         if (test_images.shape)[1]==1:
             generated_images=torch.cat([generated_images,generated_images,generated_images],1)
             test_images=torch.cat([test_images,test_images,test_images],1)

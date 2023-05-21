@@ -12,6 +12,7 @@ CUDA_VISIBLE_DEVICES=2 python main.py --root_dir ./data/processed/V --target_dir
 # Att_UNet
 CUDA_VISIBLE_DEVICES=1 python main.py --root_dir ./data/processed/V --target_dir ./data/processed/R --lambda_cycle 10 --num_epochs 101 --save_path ./checkpoints/CycleGAN/AttU_Net --generated_image_save_path generated_images/CycleGAN/AttU_Net --batch_size 2 --run_name AttU_Net --model AttU_Net
 
+
 # metric fid
 - at dental directory
 python metric/fid.py --path ./generated_images/LPIPS_Histogram_matching ./data/processed/V --img_size 256 --batch_size 64
